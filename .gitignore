@@ -1,0 +1,99 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+.env
+.env.*
+venv/
+.venv/
+ENV/
+env/
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+
+# =========================
+# Jupyter Notebook
+# =========================
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# =========================
+# Data (DO NOT PUSH RAW / LARGE DATA)
+# =========================
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# =========================
+# Model artifacts
+# =========================
+*.h5
+*.pt
+*.pth
+*.onnx
+*.joblib
+*.pkl
+
+# =========================
+# Logs & temporary files
+# =========================
+logs/
+*.log
+*.tmp
+*.cache
+
+# =========================
+# Docker
+# =========================
+docker/**/.env
+docker/**/__pycache__/
+
+# =========================
+# OS specific
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# =========================
+# Database / Secrets
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+secrets/
+credentials/
+
+# =========================
+# Reports (keep PDFs, ignore temp)
+# =========================
+reports/**/~$*
+reports/**/*.aux
+reports/**/*.log
+reports/**/*.out
+
+# =========================
+# Misc
+# =========================
+coverage/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
