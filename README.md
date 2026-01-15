@@ -1,6 +1,6 @@
 # ♟️ TFT Match History Analysis & Strategy Optimization
 
-> **Project ID:** [ADY201m]  
+> **Project ID:** ADY201m
 > **Topic:** Phân tích dữ liệu lịch sử đấu Teamfight Tactics (Riot Games API)
 
 ## 📖 Giới thiệu (Overview)
@@ -15,9 +15,9 @@ Dự án xây dựng hệ thống Data Pipeline mô phỏng doanh nghiệp để
 ## 👥 Thành viên thực hiện (Team Members)
 
 | STT | Họ và Tên | Mã Sinh Viên |
-|:---:|:---|:---|:---|
-| 01 | **[Nguyễn Trung Hiếu]** | [QE200041] |
-| 02 | **[Lê Gia Bảo]** | [QE200316] |
+|:---:|:---|:---|
+| 01 | **Nguyễn Trung Hiếu** | QE200041 |
+| 02 | **Lê Gia Bảo** | QE200316 |
 
 ---
 
