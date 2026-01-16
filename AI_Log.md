@@ -307,3 +307,145 @@ Bạn có muốn tôi chỉnh sửa sơ đồ này theo đúng các công nghệ
 Nếu bạn đồng ý với mẫu này, bạn có thể mở Draw.io, chọn các hình khối "Container" và nối chúng lại như sơ đồ trên.
 
 Bạn muốn tôi tùy chỉnh thêm phần nào cho phù hợp với đề tài cụ thể của mình không?
+
+chevron_right
+Chào bạn, dựa trên yêu cầu khắt khe của môn học (mô phỏng hệ thống Enterprise) và đề tài TFT cụ thể của bạn, tôi sẽ thiết kế kiến trúc hệ thống (Docker Architecture) và luồng dữ liệu chi tiết.
+Đây là thiết kế đáp ứng đúng yêu cầu 3 Container (MinIO, DB, App) và giải quyết được các giả thuyết (Hypotheses) của bạn.
+1. Sơ đồ kiến trúc hệ thống (System Architecture Diagram)
+Dưới đây là sơ đồ luồng dữ liệu và cấu trúc Docker. Bạn có thể copy code Mermaid này vào file Markdown báo cáo hoặc dùng các công cụ vẽ để tạo ảnh tương tự.
+code
+Mermaid
+graph TD
+    subgraph "External World"
+        RIOT_API[("☁️ Riot Games API<br>(TFT Match History)")]
+    end
+
+    subgraph "Docker Host (Local Machine)"
+        direction TB
+        
+        subgraph "Container 1: Data Lake"
+            MINIO[("🗄️ MinIO S3<br>(Raw JSON Storage)")]
+        end
+
+        subgraph "Container 2: Database"
+            POSTGRES[("🐘 PostgreSQL<br>(Structured Data)")]
+        end
+
+        subgraph "Container 3: Application / Workstation"
+            PY_APP["🐍 Python Environment<br>(Jupyter / Scripts)"]
+            
+            subgraph "Source Code Modules"
+                CRAWLER["Ingestion (Crawler.py)"]
+                CLEANER["Processing (Cleaner.py)<br>Logic: Identify Carry & Strategy"]
+                NB["Notebooks<br>(Analysis & Modeling)"]
+            end
+        end
+
+        %% Data Flow
+        RIOT_API == "1. Fetch Match JSON" ==> CRAWLER
+        CRAWLER -- "2. Save Raw JSON" --> MINIO
+        MINIO -- "3. Read Raw Data" --> CLEANER
+        CLEANER -- "4. Transform & Extract Logic<br>(Detect Carry, Reroll/Fast8)" --> POSTGRES
+        POSTGRES <== "5. Query for Analysis" ==> NB
+    end
+
+    %% Storage Volumes
+    MINIO -.-> vol_minio["Volume: /data"]
+    POSTGRES -.-> vol_pg["Volume: /var/lib/postgresql/data"]
+    PY_APP -.-> vol_code["Bind Mount: ./src & ./notebooks"]
+2. Chi tiết các thành phần (Component Details)
+Dưới đây là mô tả chi tiết chức năng của từng Container tương ứng với bài toán TFT của bạn:
+Container 1: MinIO (Data Lake - S3 Compatible)
+Vai trò: Lưu trữ dữ liệu thô (Raw Data) để đảm bảo không bị mất dữ liệu gốc và tránh việc phải gọi API Riot nhiều lần (tránh rate limit).
+Cấu trúc Bucket:
+tft-raw-matches: Chứa các file JSON, mỗi file là một match_id.
+Tại sao cần? Đáp ứng yêu cầu môn học. Nếu code xử lý bị lỗi, bạn chỉ cần xóa DB và chạy lại script xử lý từ MinIO mà không cần tải lại từ Riot.
+Container 2: PostgreSQL (Relational Database)
+Vai trò: Lưu trữ dữ liệu đã làm sạch và có cấu trúc để phục vụ truy vấn SQL.
+Schema dự kiến (Quan trọng cho bài toán):
+matches: Thông tin chung (match_id, game_version, datetime).
+participants: Thông tin người chơi (puuid, match_id, placement, gold_left, level).
+units: Thông tin tướng trên bàn cờ (character_id, tier (sao), items, rarity). -> Bảng quan trọng để tìm Carry.
+traits: Tộc hệ kích hoạt.
+Logic lưu trữ: Dữ liệu từ MinIO sẽ được "đập nhỏ" ra để nhét vào các bảng này.
+Container 3: Python Workstation (App)
+Đây là nơi chứa toàn bộ logic xử lý của bạn (nằm trong thư mục src/ và notebooks/).
+Module Ingestion (src/ingestion/crawler.py):
+Gọi Riot API lấy danh sách Match ID theo Rank (Challenger/Grandmaster...).
+Lấy chi tiết từng trận (Match Detail).
+Lưu nguyên khối JSON vào MinIO.
+Module Processing (src/processing/cleaner.py):
+Đọc JSON từ MinIO.
+Thực hiện Logic Hypotheses của bạn tại đây:
+Check Carry: Duyệt qua list units. Nếu Unit có 3 items HOẶC (Unit 1-3 vàng & 3 sao) HOẶC (Unit 4-5 vàng & 2 sao) -> Gán cờ is_carry = True.
+Check Strategy: Kiểm tra đội hình. Nếu Carry chính <= 3 vàng -> Gán strategy = 'Reroll'. Nếu Carry chính >= 4 vàng -> Gán strategy = 'Fast_Level'.
+Lưu kết quả đã phân loại vào PostgreSQL.
+Notebook (notebooks/):
+Kết nối PostgreSQL.
+Query SQL để trả lời câu hỏi:
+SELECT champion, AVG(placement) FROM units WHERE is_carry = TRUE GROUP BY champion ORDER BY AVG(placement) ASC LIMIT 5.
+So sánh Winrate giữa strategy = 'Reroll' vs strategy = 'Fast_Level'.
+3. File docker-compose.yml mẫu
+Để giúp bạn hình dung cấu trúc file, đây là bản mẫu cơ bản (cần đưa file này vào thư mục gốc dự án):
+code
+Yaml
+version: '3.8'
+
+services:
+  # 1. Data Lake
+  minio:
+    image: minio/minio
+    container_name: tft_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  # 2. Database
+  db:
+    image: postgres:15
+    container_name: tft_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tft_analytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  # 3. App/Workstation (Jupyter + Python Scripts)
+  app:
+    build: 
+      context: ./docker/app
+      dockerfile: Dockerfile
+    container_name: tft_workstation
+    ports:
+      - "8888:8888" # Cho Jupyter Notebook
+    volumes:
+      - ./:/app # Mount toàn bộ code vào container
+    environment:
+      - DB_HOST=db
+      - MINIO_ENDPOINT=minio:9000
+    depends_on:
+      - minio
+      - db
+    command: jupyter notebook --ip=0.0.0.0 --allow-root --no-browser
+
+volumes:
+  minio_data:
+  pg_data:
+4. Lời khuyên cho phần Báo cáo (Proposal)
+Trong file Report_1_Proposal.pdf, khi trình bày phần Architecture, bạn nên viết như sau để "ghi điểm":
+Tính Reproducibility (Khả năng tái lập): Hệ thống sử dụng Docker Compose đảm bảo môi trường đồng nhất, giảng viên có thể chạy docker-compose up là hệ thống tự dựng lên (MinIO, DB, Jupyter).
+Mô hình ELT (Extract - Load - Transform):
+E & L: Crawl từ Riot và Load thẳng vào MinIO (Data Lake) dưới dạng Raw.
+T: Transform từ MinIO sang Postgres (Data Warehouse) áp dụng các logic nghiệp vụ (Logic nhận diện Carry/Reroll).
+Lý do chọn MinIO: Giả lập môi trường Big Data thực tế (AWS S3), tách biệt lớp lưu trữ (Storage) và tính toán (Compute).
+Giải quyết bài toán: Kiến trúc này cho phép lưu lại thuộc tính items, star_level của từng tướng vào DB, từ đó mới có thể query SQL để tìm ra "Top 5 Carry" như mục tiêu đề ra.
+Bạn có thể sử dụng nội dung trên để hoàn thiện phần "Thiết kế kiến trúc hệ thống" trong báo cáo.
