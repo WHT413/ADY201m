@@ -449,3 +449,478 @@ T: Transform từ MinIO sang Postgres (Data Warehouse) áp dụng các logic ngh
 Lý do chọn MinIO: Giả lập môi trường Big Data thực tế (AWS S3), tách biệt lớp lưu trữ (Storage) và tính toán (Compute).
 Giải quyết bài toán: Kiến trúc này cho phép lưu lại thuộc tính items, star_level của từng tướng vào DB, từ đó mới có thể query SQL để tìm ra "Top 5 Carry" như mục tiêu đề ra.
 Bạn có thể sử dụng nội dung trên để hoàn thiện phần "Thiết kế kiến trúc hệ thống" trong báo cáo.
+
+làm sao để có thể lấy lịch sử trận đấu TFT từ việc sử dụng riot API
+
+Chào bạn, việc lấy lịch sử đấu Đấu Trường Chân Lý (TFT) qua Riot API yêu cầu một quy trình cụ thể vì cấu trúc dữ liệu của Riot được chia thành các bước riêng biệt. Bạn không thể lấy toàn bộ chi tiết lịch sử chỉ bằng một dòng lệnh duy nhất.
+
+Quy trình chuẩn bao gồm 3 bước chính: Lấy PUUID -> Lấy danh sách Match ID -> Lấy chi tiết từng trận.
+
+Dưới đây là hướng dẫn chi tiết và mã nguồn mẫu (Python) để bạn thực hiện.
+
+1. Quy trình xử lý dữ liệu (Workflow)
+Để lấy được dữ liệu, bạn cần hiểu luồng đi của API:
+
+Account-V1: Dùng Riot ID (Tên + Tag) để lấy PUUID.
+
+Lưu ý: PUUID là định danh duy nhất không thay đổi, khác với Summoner ID.
+
+TFT-Match-V1 (List): Dùng PUUID để lấy danh sách các mã trận đấu (Match ID).
+
+TFT-Match-V1 (Details): Dùng Match ID để lấy chi tiết trận đấu (Tướng, Tộc hệ, Lõi công nghệ, Thứ hạng...).
+
+2. Các Endpoint cần thiết
+Bạn cần chú ý đến Routing (Khu vực). Với Việt Nam:
+
+Account: Sử dụng asia (khu vực quản lý tài khoản).
+
+Match: Sử dụng sea (khu vực Đông Nam Á lưu trữ trận đấu TFT).
+
+Bước	Endpoint (URL)	Mục đích
+1	/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}	Lấy puuid từ Riot ID.
+2	/tft/match/v1/matches/by-puuid/{puuid}/ids	Lấy danh sách mã trận đấu gần đây.
+3	/tft/match/v1/matches/{matchId}	Lấy thông tin chi tiết của 1 trận cụ thể.
+3. Code mẫu (Python)
+Đây là một script hoàn chỉnh sử dụng thư viện requests để lấy lịch sử 5 trận đấu gần nhất của một người chơi.
+
+Python
+import requests
+import json
+
+# --- CẤU HÌNH ---
+API_KEY = "RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Thay API Key của bạn vào đây
+GAME_NAME = "TênNgườiChơi" # Ví dụ: Hide on bush
+TAG_LINE = "VN2"          # Ví dụ: VN2 (Không có dấu #)
+
+# Routing cho khu vực Việt Nam/SEA
+REGION_ACCOUNT = "asia"  # Dùng để lấy thông tin tài khoản
+REGION_MATCH = "sea"     # Dùng để lấy lịch sử đấu TFT
+
+# Header bắt buộc
+headers = {
+    "X-Riot-Token": API_KEY
+}
+
+def get_puuid(game_name, tag_line):
+    """Bước 1: Lấy PUUID từ Riot ID"""
+    url = f"https://{REGION_ACCOUNT}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{game_name}/{tag_line}"
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json().get("puuid")
+    else:
+        print(f"Lỗi lấy PUUID: {response.status_code}")
+        return None
+
+def get_match_ids(puuid, count=5):
+    """Bước 2: Lấy danh sách Match ID từ PUUID"""
+    # count: Số lượng trận muốn lấy
+    url = f"https://{REGION_MATCH}.api.riotgames.com/tft/match/v1/matches/by-puuid/{puuid}/ids?start=0&count={count}"
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Lỗi lấy danh sách trận: {response.status_code}")
+        return []
+
+def get_match_details(match_id):
+    """Bước 3: Lấy chi tiết từng trận đấu"""
+    url = f"https://{REGION_MATCH}.api.riotgames.com/tft/match/v1/matches/{match_id}"
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Lỗi lấy chi tiết trận {match_id}: {response.status_code}")
+        return None
+
+# --- CHẠY CHƯƠNG TRÌNH ---
+print(f"Đang lấy dữ liệu cho {GAME_NAME}#{TAG_LINE}...")
+
+# 1. Lấy PUUID
+puuid = get_puuid(GAME_NAME, TAG_LINE)
+
+if puuid:
+    print(f"PUUID: {puuid}")
+    
+    # 2. Lấy danh sách trận đấu
+    match_ids = get_match_ids(puuid, count=3) # Lấy 3 trận gần nhất
+    print(f"Tìm thấy {len(match_ids)} trận đấu gần đây.")
+    
+    # 3. Lấy chi tiết từng trận
+    for m_id in match_ids:
+        print(f"\n--- Đang xử lý trận: {m_id} ---")
+        details = get_match_details(m_id)
+        
+        if details:
+            # Lấy thông tin người chơi mục tiêu trong trận đấu đó
+            participants = details['info']['participants']
+            
+            # Tìm người chơi của mình trong danh sách 8 người
+            my_stats = next((p for p in participants if p['puuid'] == puuid), None)
+            
+            if my_stats:
+                placement = my_stats['placement']
+                level = my_stats['level']
+                
+                # Lấy danh sách Unit
+                units = [u['character_id'] for u in my_stats['units']]
+                
+                print(f"Hạng: {placement}")
+                print(f"Level: {level}")
+                print(f"Đội hình: {', '.join(units)}")
+            else:
+                print("Không tìm thấy dữ liệu người chơi trong trận này.")
+4. Lưu ý quan trọng khi xử lý JSON
+Dữ liệu trả về ở Bước 3 (Match Details) rất lớn và phức tạp. Bạn cần chú ý các trường sau trong JSON:
+
+info: Chứa dữ liệu chính của trận đấu.
+
+game_datetime: Thời gian diễn ra.
+
+tft_set_number: Mùa giải (VD: Set 10, Set 11).
+
+participants: Một mảng (array) chứa 8 người chơi. Bạn phải duyệt vòng lặp (loop) qua mảng này và so sánh puuid để tìm ra đúng người chơi bạn cần.
+
+augments: Các lõi công nghệ đã chọn.
+
+traits: Các tộc/hệ đã kích hoạt.
+
+units: Các tướng trên bàn cờ (bao gồm cả items đang cầm).
+
+5. Giới hạn (Rate Limits)
+Nếu bạn dùng API Key cá nhân (Personal Key), Riot giới hạn khoảng:
+
+20 requests / 1 giây.
+
+100 requests / 2 phút.
+
+Vì vậy, nếu bạn muốn lấy lịch sử của nhiều người chơi cùng lúc, hãy thêm time.sleep() vào code để tránh bị chặn (Error 429).
+
+Bạn có muốn mình hướng dẫn sâu hơn về cách phân tích dữ liệu JSON trả về để tính toán tỷ lệ thắng hoặc top 4 trung bình không?
+
+vậy tôi muốn lấy của 100 người chơi hàng đầu thì sao
+
+Việc lấy dữ liệu của 100 người chơi hàng đầu (Top Challenger) phức tạp hơn một chút vì bạn phải xử lý vấn đề giới hạn lượt gọi API (Rate Limit) và thay đổi luồng dữ liệu (workflow).
+
+Thay vì đi từ Tên người chơi, bạn sẽ đi từ Bảng xếp hạng (League Endpoint).
+
+1. Luồng dữ liệu mới (Workflow)
+Để lấy Top 100, bạn cần đi qua 4 bước (thêm một bước chuyển đổi ID):
+
+League-V1 (Challenger): Lấy danh sách Top người chơi.
+
+Lưu ý: API này trả về Summoner ID, không phải PUUID.
+
+Summoner-V1: Dùng Summoner ID để lấy PUUID.
+
+Lý do: API Lịch sử đấu bắt buộc dùng PUUID.
+
+Match-V1 (List): Dùng PUUID lấy danh sách trận.
+
+Match-V1 (Detail): Lấy chi tiết trận đấu.
+
+2. Vấn đề Routing (Quan trọng)
+Riot phân chia server rất kỹ:
+
+Dữ liệu Bảng xếp hạng & Summoner: Phải gọi theo Platform cụ thể (Ví dụ VN là vn2, Hàn là kr).
+
+Dữ liệu Trận đấu: Phải gọi theo Region khu vực lớn (Ví dụ VN thuộc sea).
+
+3. Code mẫu (Python) - Đã xử lý Rate Limit
+Vì lấy 100 người sẽ tốn rất nhiều request, mình đã thêm hàm time.sleep() để tránh bị Riot khóa API Key tạm thời.
+
+Python
+import requests
+import time
+
+# --- CẤU HÌNH ---
+API_KEY = "RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # API Key của bạn
+TOP_COUNT = 5  # Test trước với 5 người, sau đó đổi thành 100
+MATCH_COUNT = 2 # Số trận muốn lấy mỗi người
+
+# Routing
+PLATFORM = "vn2"   # Dùng cho Summoner & League (VN2 là server Việt Nam)
+REGION = "sea"     # Dùng cho Match History (SEA là khu vực Đông Nam Á)
+
+headers = {
+    "X-Riot-Token": API_KEY
+}
+
+def get_challengers():
+    """Bước 1: Lấy danh sách Thách Đấu"""
+    url = f"https://{PLATFORM}.api.riotgames.com/tft/league/v1/challenger"
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            # Trả về danh sách, sắp xếp theo điểm LP từ cao xuống thấp
+            entries = response.json()['entries']
+            entries.sort(key=lambda x: x['leaguePoints'], reverse=True)
+            return entries[:TOP_COUNT] # Cắt lấy số lượng mong muốn
+        else:
+            print(f"Lỗi lấy Challenger: {response.status_code}")
+            return []
+    except Exception as e:
+        print(f"Exception: {e}")
+        return []
+
+def get_puuid_by_summoner_id(summoner_id):
+    """Bước 2: Đổi SummonerID sang PUUID"""
+    url = f"https://{PLATFORM}.api.riotgames.com/tft/summoner/v1/summoners/{summoner_id}"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()['puuid']
+    return None
+
+def get_matches(puuid):
+    """Bước 3: Lấy danh sách trận đấu"""
+    url = f"https://{REGION}.api.riotgames.com/tft/match/v1/matches/by-puuid/{puuid}/ids?count={MATCH_COUNT}"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    return []
+
+# --- CHẠY CHƯƠNG TRÌNH ---
+print("Đang lấy danh sách Thách Đấu...")
+top_players = get_challengers()
+print(f"Đã tìm thấy {len(top_players)} người chơi hàng đầu.\n")
+
+all_data = []
+
+for idx, player in enumerate(top_players):
+    s_id = player['summonerId']
+    # Tên có thể trống trong API League, nhưng SummonerID luôn có
+    print(f"[{idx+1}/{len(top_players)}] Đang xử lý SummonerID: {s_id[:10]}...") 
+    
+    # 1. Lấy PUUID
+    puuid = get_puuid_by_summoner_id(s_id)
+    
+    if puuid:
+        # 2. Lấy Match IDs
+        match_ids = get_matches(puuid)
+        
+        # Lưu vào danh sách tạm
+        player_data = {
+            "rank_lp": player['leaguePoints'],
+            "puuid": puuid,
+            "match_ids": match_ids
+        }
+        all_data.append(player_data)
+        
+        print(f"   -> Đã lấy {len(match_ids)} trận.")
+    else:
+        print("   -> Không lấy được PUUID.")
+    
+    # --- QUAN TRỌNG: NGỦ ĐỂ TRÁNH BỊ BAN ---
+    # Personal Key giới hạn 20 request/1 giây và 100 request/2 phút.
+    # Mỗi vòng lặp ta gọi 2 API (Summoner + Match List).
+    # Sleep 1.5 giây là an toàn cho Key cá nhân.
+    time.sleep(1.5) 
+
+print("\n--- HOÀN THÀNH ---")
+print(f"Đã thu thập dữ liệu của {len(all_data)} người chơi.")
+# Tại đây bạn có thể tiếp tục dùng vòng lặp để lấy chi tiết từng trận (Step 4 cũ)
+4. Bài toán về hiệu năng (Bottleneck)
+Bạn cần lưu ý vấn đề toán học này nếu dùng Personal API Key (Key miễn phí):
+
+Giới hạn: 100 requests / 2 phút.
+
+Yêu cầu: 100 người chơi x (1 request đổi ID + 1 request lấy list trận) = 200 requests.
+
+Thời gian tối thiểu: Bạn sẽ mất ít nhất 4 phút chỉ để lấy danh sách trận đấu của 100 người.
+
+Nếu lấy chi tiết trận đấu: Giả sử mỗi người lấy 5 trận = 500 requests nữa. Tổng cộng bạn sẽ mất khoảng 15-20 phút treo máy để script chạy xong.
+
+Giải pháp tối ưu:
+
+Lưu Cache: Nếu trận đấu đó (Match ID) bạn đã tải về rồi (từ lịch sử của người chơi khác), hãy lưu nó vào Database/File JSON để không phải gọi API lại.
+
+Production Key: Nếu bạn làm app nghiêm túc, bạn cần đăng ký Product Key với Riot để tăng giới hạn này lên.
+
+Bạn có muốn mình hướng dẫn cách lưu dữ liệu này vào file Excel/CSV để tiện phân tích xem các cao thủ đang spam bài gì không?
+
+liệu có thể biết được con số 1 người có thể lấy bao nhiêu trận đấu không
+
+Câu trả lời ngắn gọn là: Có, bạn có thể lấy gần như toàn bộ lịch sử đấu, nhưng không phải chỉ bằng một lệnh duy nhất mà phải dùng kỹ thuật "Phân trang" (Pagination).
+
+Riot không trả về 1000 trận đấu cùng lúc để tránh tắc nghẽn server. Dưới đây là các giới hạn và cách vượt qua chúng:
+
+1. Giới hạn kỹ thuật của API
+Khi bạn gọi endpoint lấy danh sách trận đấu (/tft/match/v1/matches/by-puuid/.../ids), có 2 tham số quan trọng:
+
+count (Số lượng): Mặc định là 20. Tối đa bạn có thể để là 200 (nhưng nên để 100 cho ổn định).
+
+start (Vị trí bắt đầu): Mặc định là 0 (trận mới nhất).
+
+Cách hoạt động: Riot cho phép bạn lấy dữ liệu theo từng "trang". Ví dụ:
+
+Gọi lần 1: start=0, count=100 -> Lấy trận 1 đến 100.
+
+Gọi lần 2: start=100, count=100 -> Lấy trận 101 đến 200.
+
+...
+
+Bạn cứ gọi tiếp cho đến khi API trả về danh sách rỗng [] -> Nghĩa là đã hết lịch sử.
+
+2. Giới hạn thời gian lưu trữ (Data Retention)
+Riot không lưu trữ dữ liệu mãi mãi. Theo chính sách hiện tại:
+
+Dữ liệu chi tiết trận đấu thường được lưu trữ trong khoảng 2 năm.
+
+Với một người chơi chăm chỉ (spam game), con số này có thể lên tới vài nghìn trận đấu.
+
+3. Code mẫu: Lấy TẤT CẢ trận đấu của 1 người (Pagination)
+Script này sẽ chạy vòng lặp liên tục để "đào" sâu xuống lịch sử đấu của người chơi cho đến khi không còn trận nào nữa.
+
+Python
+import requests
+import time
+
+API_KEY = "RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+PUUID = "PUUID_CUA_NGUOI_CHOI" # Bạn lấy PUUID từ bước trước bỏ vào đây
+REGION_MATCH = "sea"
+
+headers = { "X-Riot-Token": API_KEY }
+
+def get_all_matches(puuid):
+    all_matches = []
+    start_index = 0
+    batch_size = 100 # Lấy tối đa 100 trận mỗi lần gọi
+    
+    while True:
+        print(f"Đang lấy từ vị trí {start_index}...")
+        
+        url = f"https://{REGION_MATCH}.api.riotgames.com/tft/match/v1/matches/by-puuid/{puuid}/ids?start={start_index}&count={batch_size}"
+        
+        try:
+            response = requests.get(url, headers=headers)
+            
+            if response.status_code == 429: # Nếu bị giới hạn rate limit
+                print("Bị giới hạn API, đang đợi 10 giây...")
+                time.sleep(10)
+                continue # Thử lại
+            
+            if response.status_code != 200:
+                print(f"Lỗi: {response.status_code}")
+                break
+
+            match_list = response.json()
+            
+            # ĐIỀU KIỆN DỪNG: Nếu danh sách trả về rỗng, tức là hết trận để lấy
+            if not match_list:
+                break
+                
+            all_matches.extend(match_list)
+            
+            # Tăng vị trí bắt đầu cho lần gọi sau
+            start_index += batch_size
+            
+            # Ngủ nhẹ để tránh spam server quá gắt
+            time.sleep(0.5)
+            
+        except Exception as e:
+            print(f"Lỗi kết nối: {e}")
+            break
+            
+    return all_matches
+
+# --- CHẠY THỬ ---
+print("Bắt đầu quét toàn bộ lịch sử...")
+full_history = get_all_matches(PUUID)
+print(f"Tổng cộng tìm thấy: {len(full_history)} trận đấu.")
+4. Chiến thuật cho bài toán "100 người chơi hàng đầu"
+Nếu bạn muốn áp dụng việc "lấy hết lịch sử" cho cả "100 người chơi", bạn sẽ gặp vấn đề rất lớn:
+
+Số lượng Request khổng lồ:
+
+Giả sử trung bình mỗi Thách Đấu chơi 1.000 trận/mùa.
+
+Mỗi lần lấy được 100 ID. -> Cần 10 requests để lấy hết ID của 1 người.
+
+100 người = 1.000 requests (chỉ để lấy danh sách ID).
+
+Sau đó bạn cần lấy chi tiết của 1.000 trận x 100 người = 100.000 requests.
+
+Thời gian thực thi:
+
+Với Key miễn phí (100 req/2 phút): Bạn sẽ mất khoảng 33 tiếng đồng hồ liên tục để tải hết dữ liệu chi tiết của 100 người chơi (mỗi người 1000 trận).
+
+Lời khuyên:
+
+Chỉ nên lấy 20 trận gần nhất (count=20) của mỗi người chơi để phân tích Meta hiện tại. Meta TFT thay đổi theo tuần (patch), nên việc lấy dữ liệu từ 2 tháng trước thường không có giá trị phân tích cho hiện tại.
+
+vậy làm sao để lấy PUUID
+
+Để lấy PUUID, bạn có 2 cách chính tùy thuộc vào việc bạn đang có thông tin gì trong tay: Riot ID (Tên#Tag) hay Summoner ID (ID từ bảng xếp hạng).
+
+Dưới đây là chi tiết từng cách:
+
+Cách 1: Lấy từ Riot ID (Dùng khi tìm kiếm người cụ thể)
+Đây là cách phổ biến nhất khi bạn muốn tra cứu lịch sử của một ai đó mà bạn biết tên (Ví dụ: Em Chè#VN2).
+
+API Endpoint: Account-V1
+
+Khu vực (Routing): Sử dụng khu vực lớn (asia, americas, europe). Với Việt Nam là asia.
+
+Cấu trúc URL: https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}
+
+Cách 2: Lấy từ Summoner ID (Dùng cho Tool lấy Top 100)
+Khi bạn lấy danh sách Top Thách Đấu (như mình đã hướng dẫn ở câu trả lời trước), Riot trả về Summoner ID, không có Riot ID. Bạn bắt buộc phải dùng cách này để đổi sang PUUID.
+
+API Endpoint: Summoner-V1
+
+Khu vực (Routing): Sử dụng máy chủ cụ thể (vn2, kr, na1, jp1...).
+
+Cấu trúc URL: https://vn2.api.riotgames.com/tft/summoner/v1/summoners/{encryptedSummonerId}
+
+Code mẫu tổng hợp (Python)
+Dưới đây là đoạn code Python bao gồm cả 2 hàm để bạn dễ hình dung sự khác biệt:
+
+Python
+import requests
+
+API_KEY = "RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Thay Key của bạn
+HEADERS = {"X-Riot-Token": API_KEY}
+
+# --- CÁCH 1: DÙNG RIOT ID (Tên + Tag) ---
+def get_puuid_by_riot_id(game_name, tag_line):
+    # Lưu ý: Dùng routing 'asia' cho tài khoản Việt Nam
+    url = f"https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{game_name}/{tag_line}"
+    
+    resp = requests.get(url, headers=HEADERS)
+    if resp.status_code == 200:
+        return resp.json()['puuid']
+    else:
+        print("Lỗi Cách 1:", resp.status_code)
+        return None
+
+# --- CÁCH 2: DÙNG SUMMONER ID (Từ bảng xếp hạng) ---
+def get_puuid_by_summoner_id(summoner_id):
+    # Lưu ý: Dùng routing 'vn2' cho server Việt Nam
+    url = f"https://vn2.api.riotgames.com/tft/summoner/v1/summoners/{summoner_id}"
+    
+    resp = requests.get(url, headers=HEADERS)
+    if resp.status_code == 200:
+        return resp.json()['puuid']
+    else:
+        print("Lỗi Cách 2:", resp.status_code)
+        return None
+
+# --- TEST THỬ ---
+# Ví dụ Cách 1: Tìm người chơi tên "SofM", tag "VN2"
+print("Đang tìm PUUID bằng tên...")
+puuid_1 = get_puuid_by_riot_id("SofM", "VN2")
+print(f"Kết quả 1: {puuid_1}\n")
+
+# Ví dụ Cách 2: Giả sử bạn đã có Summoner ID từ API League (Top Challenger)
+# Đây là ID ví dụ giả định
+fake_summoner_id = "mac_dinh_tu_api_league_se_tra_ve_chuoi_nay" 
+# puuid_2 = get_puuid_by_summoner_id(fake_summoner_id)
+# print(f"Kết quả 2: {puuid_2}")
+Tóm tắt sự khác biệt quan trọng:
+Đặc điểm	Cách 1 (Riot ID)	Cách 2 (Summoner ID)
+Đầu vào	Tên ingame + Tag (vd: #VN2)	Mã ID mã hóa (lấy từ API League)
+URL Khu vực	asia (Khu vực quản lý)	vn2 (Máy chủ cụ thể)
+Mục đích	Tìm người chơi cụ thể	Dùng trong vòng lặp quét Top server
+
