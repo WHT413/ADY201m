@@ -1,0 +1,36 @@
+services:
+  # --- Service 1: MinIO ---
+  minio:
+    image: minio/minio:latest
+    container_name: tft_minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_storage:/data
+
+  # --- Service 2: Python App ---
+  app:
+    build: .
+    container_name: tft_app
+    working_dir: /app
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+    command: tail -f /dev/null
+    environment:
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER}
+      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+      - RIOT_API_KEY=${RIOT_API_KEY}
+    depends_on:
+      - minio
+
+volumes:
+  minio_storage:
+
