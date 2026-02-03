@@ -1,0 +1,130 @@
+{
+  "COMPONENTS": [
+    "TFT_Item_BFSword",
+    "TFT_Item_RecurveBow",
+    "TFT_Item_NeedlesslyLargeRod",
+    "TFT_Item_TearOfTheGoddess",
+    "TFT_Item_ChainVest",
+    "TFT_Item_NegatronCloak",
+    "TFT_Item_GiantsBelt",
+    "TFT_Item_SparringGloves"
+  ],
+  "DEFENDER_PHYSICAL": [
+    "TFT_Item_BrambleVest",
+    "TFT_Item_GargoyleStoneplate",
+    "TFT_Item_WarmogsArmor",
+    "TFT_Item_SunfireCape",
+    "TFT_Item_DragonsClaw",
+    "TFT_Item_Redemption",
+    "TFT_Item_ProtectorVow"
+  ],
+
+  "DEFENDER_MAGIC": [
+    "TFT_Item_DragonsClaw",
+    "TFT_Item_Redemption",
+    "TFT_Item_GargoyleStoneplate",
+    "TFT_Item_WarmogsArmor",
+    "TFT_Item_AdaptiveHelm",
+    "TFT_Item_ProtectorVow"
+  ],
+
+  "BRUISER_AD": [
+    "TFT_Item_Bloodthirster",
+    "TFT_Item_TitansResolve",
+    "TFT_Item_HandOfJustice",
+    "TFT_Item_GiantSlayer",
+    "TFT_Item_EdgeOfNight",
+    "TFT_Item_Quicksilver"
+  ],
+
+  "BRUISER_AP": [
+    "TFT_Item_ArchangelsStaff",
+    "TFT_Item_HandOfJustice",
+    "TFT_Item_TitansResolve",
+    "TFT_Item_Bloodthirster",
+    "TFT_Item_Quicksilver"
+  ],
+
+  "RANGED_AD": [
+    "TFT_Item_GuinsoosRageblade",
+    "TFT_Item_LastWhisper",
+    "TFT_Item_InfinityEdge",
+    "TFT_Item_GiantSlayer",
+    "TFT_Item_Bloodthirster",
+    "TFT_Item_Quicksilver"
+  ],
+
+  "AD_CASTER": [
+    "TFT_Item_SpearOfShojin",
+    "TFT_Item_InfinityEdge",
+    "TFT_Item_LastWhisper",
+    "TFT_Item_HandOfJustice",
+    "TFT_Item_GiantSlayer"
+  ],
+
+  "RANGED_AP": [
+    "TFT_Item_BlueBuff",
+    "TFT_Item_SpearOfShojin",
+    "TFT_Item_RabadonsDeathcap",
+    "TFT_Item_JeweledGauntlet",
+    "TFT_Item_GiantSlayer"
+  ],
+
+  "AP_CASTER": [
+    "TFT_Item_BlueBuff",
+    "TFT_Item_SpearOfShojin",
+    "TFT_Item_JeweledGauntlet",
+    "TFT_Item_RabadonsDeathcap",
+    "TFT_Item_GiantSlayer",
+    "TFT_Item_HextechGunblade"
+  ],
+
+  "ASSASSIN_PHYSICAL": [
+    "TFT_Item_EdgeOfNight",
+    "TFT_Item_InfinityEdge",
+    "TFT_Item_GiantSlayer",
+    "TFT_Item_Bloodthirster",
+    "TFT_Item_Quicksilver"
+  ],
+
+  "ASSASSIN_MAGIC": [
+    "TFT_Item_BlueBuff",
+    "TFT_Item_JeweledGauntlet",
+    "TFT_Item_RabadonsDeathcap",
+    "TFT_Item_HextechGunblade",
+    "TFT_Item_Quicksilver"
+  ],
+
+  "SPECIAL_PHYSICAL": [
+    "TFT_Item_GuinsoosRageblade",
+    "TFT_Item_LastWhisper",
+    "TFT_Item_GiantSlayer",
+    "TFT_Item_ZekesHerald"
+  ],
+
+  "SPECIAL_MAGIC": [
+    "TFT_Item_BlueBuff",
+    "TFT_Item_JeweledGauntlet",
+    "TFT_Item_ChaliceOfPower",
+    "TFT_Item_Redemption"
+  ],
+
+  "SUPPORT_UTILITY": [
+    "TFT_Item_Redemption",
+    "TFT_Item_ChaliceOfPower",
+    "TFT_Item_ZekesHerald",
+    "TFT_Item_ProtectorVow",
+    "TFT_Item_ZzRotPortal"
+  ],
+  "ORNN_ITEMS": [
+      "TFT_Item_Artifact_AegisOfDawn", "TFT_Item_Artifact_AegisOfDusk", "TFT_Item_Artifact_BlightingJewel",
+      "TFT_Item_Artifact_CappaJuice", "TFT_Item_Artifact_Dawncore", "TFT_Item_Artifact_EternalPact", 
+      "TFT_Item_Artifact_Fishbones", "TFT_Item_Artifact_HellfireHatchet", "TFT_Item_Artifact_HorizonFocus", 
+      "TFT_Item_Artifact_InnervatingLocket", "TFT_Item_Artifact_LichBane", "TFT_Item_Artifact_LightshieldCrest", 
+      "TFT_Item_Artifact_LudensTempest", "TFT_Item_Artifact_Mittens", "TFT_Item_Artifact_NavoriFlickerblades", 
+      "TFT_Item_Artifact_ProwlersClaw", "TFT_Item_Artifact_RapidFirecannon", "TFT_Item_Artifact_SeekersArmguard",
+      "TFT_Item_Artifact_SilvermereDawn", "TFT_Item_Artifact_StatikkShiv", "TFT_Item_Artifact_TalismanOfAscension", 
+      "TFT_Item_Artifact_TheIndomitable", "TFT_Item_Artifact_TitanicHydra", "TFT_Item_Artifact_UnendingDespair", 
+      "TFT_Item_Artifact_VoidGauntlet", "TFT_Item_Artifact_WitsEnd"
+  ]
+}
