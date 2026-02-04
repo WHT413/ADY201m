@@ -924,3 +924,38 @@ Tóm tắt sự khác biệt quan trọng:
 URL Khu vực	asia (Khu vực quản lý)	vn2 (Máy chủ cụ thể)
 Mục đích	Tìm người chơi cụ thể	Dùng trong vòng lặp quét Top server
 
+kiểm tra file database này, và cho tôi biết 1 riot_id + match_id thì có thể có bao nhiêu carry?
+
+Dựa trên việc kiểm tra tệp cơ sở dữ liệu tft_data.db, dưới đây là kết quả phân tích:
+
+1. Cấu trúc cơ sở dữ liệu
+Cơ sở dữ liệu bao gồm 3 bảng chính:
+
+players: Danh sách Riot ID.
+
+matches: Danh sách Match ID (mã trận đấu).
+
+carries: Chứa thông tin về các tướng gánh đội (carry) trong từng trận đấu của từng người chơi.
+
+2. Phân tích bảng carries
+Bảng này có các cột: riot_id, match_id, placement, level, carry_name, carry_tier, carry_cost.
+
+Để trả lời câu hỏi của bạn, tôi đã thực hiện thống kê số lượng bản ghi cho mỗi cặp riot_id và match_id:
+
+Tổng số bản ghi trong bảng carries: 19,193 dòng.
+
+Số lượng cặp (riot_id + match_id) duy nhất: 19,193 cặp.
+
+3. Kết luận
+Trong file database này, với mỗi cặp 1 riot_id + 1 match_id, chỉ có duy nhất 1 carry được ghi nhận.
+
+Điều này cho thấy dữ liệu đã được xử lý để chỉ trích xuất tướng carry quan trọng nhất (primary carry) của mỗi người chơi trong mỗi trận đấu, chứ không lưu trữ toàn bộ đội hình hay nhiều carry cùng lúc.
+
+Chi tiết các thông tin đi kèm với mỗi carry:
+
+carry_name: Tên tướng (ví dụ: TFT16_Seraphine, TFT16_Braum).
+
+carry_tier: Cấp sao của tướng (ví dụ: 1, 2, 3 sao).
+
+carry_cost: Giá tiền của tướng.
+
