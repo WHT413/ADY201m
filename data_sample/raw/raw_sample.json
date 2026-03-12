@@ -182,23 +182,7 @@
               }
             ],
             "win": true
-          },
-          {
-            "companion": {
-              "content_ID": "610a6ada-8907-419c-bc43-decf4360ee80",
-              "item_ID": 115001,
-              "skin_ID": 1,
-              "species": "PetChibiKayle"
-            },
-            "gold_left": 2,
-            "last_round": 30,
-            "level": 9,
-            "missions": {
-              "PlayerScore2": 88
-            },
-            "placement": 6,
-            "players_eliminated": 0
-          }
+          }   
         ]
       }
     }
