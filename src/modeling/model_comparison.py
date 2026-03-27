@@ -263,6 +263,8 @@ def plot_roc_curve_comparison(
     y_test: np.ndarray,
     save_path: str = 'roc_comparison.png'
 ) -> None:
+    import os
+    os.makedirs('reports/imgs', exist_ok=True)
     """
     Plot and save ROC curves for both models.
     
