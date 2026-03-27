@@ -108,7 +108,7 @@ The data was grouped by carry_name to calculate performance statistics for each 
 ---
 
 ### Visualization
-![Top 5 carries](top5_carries.png)
+![Top 5 carries](imgs/top5_carries.png)
 
 ---
 
@@ -137,7 +137,7 @@ The query then counts the total number of games and the number of top-4 finishes
 
 ### Visualization
 
-![play style comparision](playstyle_winrate_comparison.png)
+![play style comparision](imgs/playstyle_winrate_comparison.png)
 
 ---
 
@@ -167,7 +167,7 @@ Next, matches are grouped by the number of carries, and the total matches, total
 
 ### Visualization
 
-![carry_count_winrate](carry_count_with_win_rate.png)
+![carry_count_winrate](imgs/carry_count_with_win_rate.png)
 
 
 

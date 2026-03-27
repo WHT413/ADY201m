@@ -11,7 +11,7 @@
 
 ## 2. System Architecture
 ### Pipeline Diagram
-![](data_flow_chart.png)
+![](imgs/data_flow_chart.png)
 ### Components Description
 - **Raw Data (JSON)**: Contains match data with nested participant and unit information
 
