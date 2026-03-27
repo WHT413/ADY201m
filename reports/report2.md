@@ -3,9 +3,9 @@
 ## 1. Overview
 
 
-- Objective: <!-- e.g., Build an end-to-end data pipeline -->Build an system that can collect TFT's matchs histories
-- Scope: <!-- e.g., From crawling → storage → database --> Crawling (RIOT API) -> Storage (MinIO) -> Database (SQLite)
-- Data source: <!-- API / website / dataset --> https://developer.riotgames.com/apis#tft-match-v1/GET_getMatchIdsByPUUID
+- Objective: Build an system that can collect TFT's matchs histories
+- Scope:  Crawling (RIOT API) -> Storage (MinIO) -> Database (SQLite)
+- Data source:  https://developer.riotgames.com/apis#tft-match-v1/GET_getMatchIdsByPUUID
 
 ---
 
@@ -23,20 +23,20 @@
 ## 3. Data Ingestion
 
 ### Description
-> Data is read directly from local JSON files matching a specific pattern.
+ Data is read directly from local JSON files matching a specific pattern.
 
 ### Input Source
-- File pattern: `data/raw/tft_raw_top150_*.json`
+- File pattern: data/raw/tft_raw_top150_*.json
 - Data type: Nested JSON
 
 ### Processing Logic
 - Iterate through all JSON files
 - Extract:
-  - `match_id`
-  - `puuid`
-  - `placement`
-  - `level`
-  - `units` (list of champions)
+  - match_id
+  - puuid
+  - placement
+  - level
+  - units (list of champions)
 ## 4. Data Preprocessing
 ### Deduplication
 Remove duplication based on match_id and puuid
@@ -52,12 +52,12 @@ Identify "carry" units using predefined rules.
    - Components
 
 2. For each unit:
-   - Apply `is_unit_carry()` function
+   - Apply is_unit_carry() function
 
 3. Extract:
-   - `carry_name`
-   - `carry_tier`
-   - `carry_cost`
+   - carry_name
+   - carry_tier
+   - carry_cost
 
 ### Output
 - Only rows containing at least one carry are kept
