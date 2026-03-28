@@ -36,7 +36,7 @@ Dự án được container hóa hoàn toàn bằng Docker Compose:
 Tuân thủ quy định môn học:
 
 ```text
-Student_ID_Project_Name/
+ADY201m/
 │
 ├── .gitignore               # Ignored: .env, __pycache__, data/raw/*
 ├── README.md                # Documentation
@@ -51,12 +51,12 @@ Student_ID_Project_Name/
 │   └── processed/           # Nơi chứa Database sau xử lý
 │
 ├── src/                     # Source Code
-│   ├── ingestion/           # Riot API Crawler
+│   ├── ingestion/           # Riot API Crawler (Jupyter Notebooks)
 │   ├── processing/          # ETL & Cleaning Logic
 │   └── modeling/            # Analysis Logic
 │
 ├── notebooks/               # Analysis & Visualization (EDA)
-└── reports/                 # PDF Reports
+└── reports/                 # Reports & Images
 ```
 
 ---
@@ -110,22 +110,30 @@ docker ps
 
 ### 5. Chạy quy trình ETL
 
-Sử dụng `docker exec` để chạy script xử lý dữ liệu bên trong container:
+Chạy script ETL xử lý toàn bộ dữ liệu (JSON sang SQLite 3NF):
 
-**Cách 1: Import dữ liệu từ file CSV mẫu (Recommended)**
-Đảm bảo file csv đã có trong thư mục `data/raw/` (trên máy host).
-
+**Chạy bằng Conda Environment (Khuyên dùng)**
 ```bash
-docker exec -it tft_app python src/processing/etl_csv.py
+python src/processing/etl_json.py
 ```
 
-**Cách 2: Crawl dữ liệu mới từ Riot API**
-
+**Chạy bằng Docker (Nếu đã start container)**
 ```bash
-docker exec -it tft_app python src/ingestion/crawler.py
+docker exec -it tft_app python src/processing/etl_json.py
 ```
 
-### 6. Xem kết quả (Database)
+*Lưu ý: Quá trình thu thập dữ liệu (Crawl) hiện được chạy thông qua các file Jupyter Notebook trong thư mục `src/ingestion/`.*
+
+### 6. Huấn luyện mô hình (Modeling)
+
+Chạy pipeline phân lớp Logistic Regression và Random Forest (đầu vào từ database):
+
+```bash
+python src/modeling/model_comparison.py
+```
+*(Kết quả đánh giá và biểu đồ sẽ được tự động lưu trong thư mục `reports/imgs/`)*
+
+### 7. Xem kết quả (Database)
 
 Sau khi chạy ETL, file database sẽ được tạo tại:
 

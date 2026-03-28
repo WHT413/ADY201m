@@ -9,6 +9,10 @@ import glob
 import pandas as pd
 import sqlite3
 
+# Fix Windows console encoding issues
+if sys.platform == 'win32' and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from processing.logic_carry import load_configs, is_unit_carry, parse_units_json
@@ -32,6 +36,9 @@ def read_participants_from_json() -> pd.DataFrame:
         print(f"  Loading {json_path}...")
         with open(json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
+
+        if 'matches' in data:
+            data = data['matches']
 
         for match_id, match in data.items():
             info = match.get('info', {})

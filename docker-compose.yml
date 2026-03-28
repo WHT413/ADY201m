@@ -23,6 +23,7 @@ services:
       - ./src:/app/src
       - ./data:/app/data
       - ./configs:/app/configs
+      - ./reports:/app/reports
     command: tail -f /dev/null
     environment:
       - MINIO_ENDPOINT=${MINIO_ENDPOINT}
