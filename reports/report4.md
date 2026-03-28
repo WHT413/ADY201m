@@ -326,7 +326,7 @@ This study compared Logistic Regression and Random Forest for predicting TFT mat
 
 ### A.2 Code Repository
 
-The complete implementation is available at: [Repository URL]
+The complete implementation is available at: [https://github.com/WHT413/ADY201m]
 
 ### A.3 Reproducibility
 
@@ -338,4 +338,4 @@ python model_comparison.py
 
 ---
 
-*This report was generated as part of the Big Data Processing course (ADY202) at [University Name].*
+*This report is a part of Data Analysis course (ADY201m) at [FPT University].*
