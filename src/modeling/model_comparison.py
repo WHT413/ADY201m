@@ -257,74 +257,6 @@ def evaluate_model(
 # SECTION 5: VISUALIZATION
 # ==============================================================================
 
-def plot_roc_curve_comparison(
-    logreg_prob: np.ndarray,
-    rf_prob: np.ndarray,
-    y_test: np.ndarray,
-    save_path: str = 'roc_comparison.png'
-) -> None:
-    import os
-    os.makedirs('reports/imgs', exist_ok=True)
-    """
-    Plot and save ROC curves for both models.
-    
-    The ROC curve shows the trade-off between True Positive Rate (TPR) and
-    False Positive Rate (FPR) at various threshold settings.
-    AUC-ROC measures the overall performance (higher is better).
-    
-    Parameters:
-        logreg_prob (np.ndarray): Predicted probabilities from Logistic Regression
-        rf_prob (np.ndarray): Predicted probabilities from Random Forest
-        y_test (np.ndarray): True labels
-        save_path (str): Path to save the figure
-    """
-    # Calculate ROC curves for both models
-    logreg_fpr, logreg_tpr, _ = roc_curve(y_test, logreg_prob)
-    rf_fpr, rf_tpr, _ = roc_curve(y_test, rf_prob)
-    
-    # Calculate AUC scores
-    logreg_auc = roc_auc_score(y_test, logreg_prob)
-    rf_auc = roc_auc_score(y_test, rf_prob)
-    
-    # Create figure
-    plt.figure(figsize=(10, 8))
-    
-    # Plot ROC curves
-    plt.plot(
-        logreg_fpr, logreg_tpr, 
-        label=f'Logistic Regression (AUC = {logreg_auc:.3f})',
-        linewidth=2, color='blue'
-    )
-    plt.plot(
-        rf_fpr, rf_tpr, 
-        label=f'Random Forest (AUC = {rf_auc:.3f})',
-        linewidth=2, color='green'
-    )
-    
-    # Plot diagonal line (random classifier baseline)
-    plt.plot([0, 1], [0, 1], 'k--', label='Random Classifier', linewidth=1)
-    
-    # Configure plot
-    plt.xlabel('False Positive Rate (FPR)', fontsize=12)
-    plt.ylabel('True Positive Rate (TPR)', fontsize=12)
-    plt.title('ROC Curve Comparison: Logistic Regression vs Random Forest', fontsize=14)
-    plt.legend(loc='lower right', fontsize=10)
-    plt.grid(True, alpha=0.3)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    
-    # Add text annotation for better readability
-    plt.text(0.15, 0.85, 
-             f'Best Model: {("Random Forest" if rf_auc > logreg_auc else "Logistic Regression")}',
-             fontsize=11, bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-    
-    plt.tight_layout()
-    plt.savefig('reports/imgs/roc_comparison.png', dpi=150, bbox_inches='tight')
-    plt.show()
-    
-    print(f"[INFO] ROC curve saved to: reports/imgs/roc_comparison.png")
-
-
 def plot_feature_importance(rf_model: RandomForestClassifier, feature_names: list) -> None:
     """
     Plot feature importance from Random Forest model.
@@ -539,11 +471,6 @@ def main():
     
     # Step 8: Visualizations
     print("[STEP 8] Generating visualizations...")
-    plot_roc_curve_comparison(
-        logreg_results['y_prob'],
-        rf_results['y_prob'],
-        y_test
-    )
     plot_feature_importance(rf_model, feature_cols)
     plot_confusion_matrix_comparison(
         logreg_results['confusion_matrix'],
