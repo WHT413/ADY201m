@@ -130,8 +130,21 @@ where $h_i$ represents individual decision trees.
 - n_jobs = -1
 
 ### E. Experimental Setup
+**Training Data:**
 
-**Data Split:** 80% training, 20% testing (stratified)
+Input features (`X`):
+
+| Feature | Description |
+|---------|-------------|
+| carry_cost | Cost of the carry champion (1-7) |
+| level | Player level at the end of the match |
+| carry_tier | Star level of the carry champion (1-4) |
+| is_fastlevel | Binary playstyle indicator (`1` = FastLevel, `0` = Reroll) |
+
+Target (`y`):
+- `win`: Binary label where `1` means placement <= 4 (Top 4), and `0` means placement > 4.
+
+**Data Split:** 80% training, 20% testing
 **Random Seed:** 42 (for reproducibility)
 **Evaluation Metrics:**
 - Accuracy: $\frac{TP + TN}{TP + TN + FP + FN}$
