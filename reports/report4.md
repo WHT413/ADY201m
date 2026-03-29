@@ -1,6 +1,6 @@
 # Comparative Analysis of Logistic Regression and Random Forest for Teamfight Tactics Match Outcome Prediction
  
-**Affiliation:** Course (ADY202)  
+**Affiliation:** Course (ADY201m)  
 **Date:** March 2026
 
 ---
