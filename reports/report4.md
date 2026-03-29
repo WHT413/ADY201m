@@ -182,15 +182,7 @@ weighted avg       0.74      0.74      0.74     34707
 weighted avg       0.74      0.74      0.74     34707
 ```
 
-### C. ROC Curve Analysis
-
-The ROC curve comparison shows that **Random Forest** achieves a higher AUC-ROC score (0.7943 vs 0.7903), indicating better discrimination between classes across all threshold settings. The curve for Random Forest is slightly closer to the top-left corner, representing marginally better classifier performance. While the improvement is modest (0.5%), it is statistically significant given the large dataset size.
-
-![ROC Curve Comparison](imgs/roc_comparison.png)
-
-*Figure 1: ROC Curve Comparison between Logistic Regression and Random Forest. The Random Forest model (green) achieves a slightly higher AUC-ROC score (0.7943) compared to Logistic Regression (blue, 0.7903).*
-
-### D. Feature Importance Analysis
+### C. Feature Importance Analysis
 
 Random Forest feature importance (Mean Decrease in Impurity):
 
