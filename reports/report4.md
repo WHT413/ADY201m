@@ -250,9 +250,8 @@ The feature importance analysis reveals that **level** is the most significant p
 
 The playstyle analysis indicates that **FastLevel** has a **27.31%** higher win rate compared to Reroll (59.86% vs 32.55%). This supports the hypothesis that aggressive leveling strategies, which prioritize accessing higher-cost champions quickly, are more effective in the current TFT meta. The substantial difference in win rates may be attributed to:
 
-1. **Power Spike Timing:** FastLevel players reach their power spikes earlier in the game
-2. **Champion Quality:** Higher-cost champions (4-7 cost) typically have superior base stats and abilities
-3. **Meta Composition:** The current game meta may favor compositions built around expensive carries
+1. **Champion Quality:** Higher-cost champions (4-7 cost) typically have superior base stats and abilities
+2. **Meta Composition:** The current game meta may favor compositions built around expensive carries
 
 ### D. Hypothesis Testing
 
