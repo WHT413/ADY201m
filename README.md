@@ -90,6 +90,8 @@ RIOT_API_KEY=RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 ### 3. Khởi chạy hệ thống (Docker)
 
+**Lưu ý quan trọng:** Vui lòng mở ứng dụng **Docker Desktop** và chờ đến khi trạng thái hiển thị **"Engine Running"** trước khi thực thi lệnh bên dưới.
+
 Dựng toàn bộ hạ tầng (MinIO, Python Environment) bằng Docker Compose:
 
 ```bash
@@ -113,7 +115,16 @@ docker ps
 Chạy script ETL xử lý toàn bộ dữ liệu (JSON sang SQLite 3NF):
 
 **Chạy bằng Conda Environment (Khuyên dùng)**
+Trước khi chạy, bạn cần tạo môi trường Conda và cài đặt các dependencies từ `requirements.txt`:
 ```bash
+# Tạo và kích hoạt môi trường conda
+conda create -n tft_env python=3.10 -y
+conda activate tft_env
+
+# Cài đặt thư viện yêu cầu
+pip install -r requirements.txt
+
+# Chạy script ETL
 python src/processing/etl_json.py
 ```
 
